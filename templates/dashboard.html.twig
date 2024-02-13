@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block main %}
+    <h1>Liste des tâches à faire</h1>
+    <ul>
+        {% for do in todo %}
+            <li>ID: {{ do.id }}, Titre: {{ do.titre }}, Fait: {{ do.done ? 'Oui' : 'Non' }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
