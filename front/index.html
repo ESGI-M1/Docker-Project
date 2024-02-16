@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+
+        #container li {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <h1>Todo List</h1>
+        <ul id="container">
+
+        </ul>
+        <form>
+            <input type="text" name="todo" id="todo" required>
+            <button type="submit">Add</button>
+        </form>
+    </section>
+
+    <script>
+        const container = document.getElementById('container');
+        const form = document.querySelector('form');
+        let datas = [];
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('todo');
+            const todo = input.value;
+            input.value = '';
+
+            if (!todo || todo.trim().length === 0) {
+                return;
+            }
+
+            await fetch('http://localhost:8000/api/todos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/ld+json'
+                },
+                body: JSON.stringify({
+                    title: todo,
+                    done: false
+                })
+            });
+        });
+
+        const func = async () => {
+            const response = await fetch('http://localhost:8000/api/todos');
+            const data = await response.json();
+
+            if (JSON.stringify(data['hydra:member']) === JSON.stringify(datas)) {
+                return;
+            }
+
+            datas = data['hydra:member'];
+
+            console.log(data['hydra:member']);
+
+            container.innerHTML = '';
+            data['hydra:member'].forEach(todo => {
+                const li = document.createElement('li');
+                li.textContent = todo.title;
+                container.appendChild(li);
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = todo.done;
+                checkbox.addEventListener('change', async (e) => {
+                    await fetch(`http://localhost:8000${todo['@id']}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/merge-patch+json'
+                        },
+                        body: JSON.stringify({
+                            done: e.target.checked
+                        })
+                    });
+                });
+                li.appendChild(checkbox);
+                const delButton = document.createElement('button');
+                delButton.textContent = 'Delete';
+                delButton.addEventListener('click', async () => {
+                    await fetch(`http://localhost:8000${todo['@id']}`, {
+                        method: 'DELETE'
+                    });
+                });
+                li.appendChild(delButton);
+            });
+        };
+
+        setInterval(func, 1000);
+    </script>
+</body>
+</html>
