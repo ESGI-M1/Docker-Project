@@ -1,0 +1,22 @@
+version: "3.7"
+
+services:
+  bdd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+#    image: melvin77290/postgres-custom
+    ports:
+      - "5432:5432"
+    networks:
+      - dockerProject
+      - default
+
+  addminer:
+    image: juleslance/adminer-alpine
+    ports:
+      - "8080:80"
+
+networks:
+  dockerProject:
+    external: true
