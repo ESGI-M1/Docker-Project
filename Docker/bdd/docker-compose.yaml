@@ -2,10 +2,11 @@ version: "3.7"
 
 services:
   bdd:
-    build:
-      context: .
-      dockerfile: Dockerfile
-#    image: melvin77290/postgres-custom
+    # build:
+      #ontext: .
+      #dockerfile: Dockerfile
+    image: melvin77290/postgresql-image
+    command: ["su", "postgres", "-c", "postgres -D /var/lib/postgresql/data"]
     ports:
       - "5432:5432"
     networks:
